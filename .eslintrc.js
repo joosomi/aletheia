@@ -79,6 +79,7 @@ module.exports = {
         moduleDirectory: ['node_modules', 'src'],
         extensions: ['.js', '.ts'],
       },
+      typescript: {},
     },
   },
 };
