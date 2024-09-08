@@ -35,5 +35,8 @@
         "tsConfigPath": "libs/shared/tsconfig.lib.json"
       }
     }
+  },
+  "generate": {
+    "spec": true
   }
 }
