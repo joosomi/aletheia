@@ -5,6 +5,7 @@ import { ApiController } from './api.controller';
 import { ApiService } from './api.service';
 
 import { SharedDatabaseModule } from '@app/shared';
+import { LoggerModule } from '@app/shared/logger/logger.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { SharedDatabaseModule } from '@app/shared';
       isGlobal: true,
     }),
     SharedDatabaseModule.forRoot('API'),
+    LoggerModule,
   ],
   controllers: [ApiController],
   providers: [ApiService],

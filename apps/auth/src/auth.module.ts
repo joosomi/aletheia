@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 import { SharedDatabaseModule } from '@app/shared';
+import { LoggerModule } from '@app/shared/logger/logger.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { SharedDatabaseModule } from '@app/shared';
       envFilePath: '.env',
     }),
     SharedDatabaseModule.forRoot('AUTH'),
+    LoggerModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
