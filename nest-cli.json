@@ -14,7 +14,17 @@
       "entryFile": "main",
       "sourceRoot": "apps/api/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api/tsconfig.app.json"
+        "tsConfigPath": "apps/api/tsconfig.app.json",
+        "plugins": [
+          {
+            "name": "@nestjs/swagger",
+            "options": {
+              "classValidatorShim": true,
+              "introspectComments": true,
+              "controllerKeyOfComment": "summary"
+            }
+          }
+        ]
       }
     },
     "auth": {
@@ -23,7 +33,17 @@
       "entryFile": "main",
       "sourceRoot": "apps/auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/auth/tsconfig.app.json"
+        "tsConfigPath": "apps/auth/tsconfig.app.json",
+        "plugins": [
+          {
+            "name": "@nestjs/swagger",
+            "options": {
+              "classValidatorShim": true,
+              "introspectComments": true,
+              "controllerKeyOfComment": "summary"
+            }
+          }
+        ]
       }
     },
     "shared": {
