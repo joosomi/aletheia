@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
+import { ValidationPipe } from '@nestjs/common';
 import { AuthModule } from './auth.module';
 
 import { GlobalExceptionFilter } from '@app/shared/filters/global-exception.filter';
@@ -13,6 +13,15 @@ const bootstrap = async (): Promise<void> => {
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   app.useLogger(logger);
+
+  // Global Validation Pipe 설정
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // 정의되지 않은 프로퍼티 제거
+      forbidNonWhitelisted: true, // 정의되지 않은 프로퍼티가 있으면 에러 반환
+      transform: true, // 요청 데이터를 자동으로 변환
+    }),
+  );
 
   // Swagger 설정
   const config = new DocumentBuilder()
