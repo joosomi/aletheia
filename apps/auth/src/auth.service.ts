@@ -68,9 +68,13 @@ export class AuthService {
       expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
     });
 
+    // JWT 토큰에서 만료 시간 추출
+    const decodedRefreshToken = this.jwtService.decode(refreshToken) as { exp: number };
+    const expiresAt = new Date(decodedRefreshToken.exp * 1000); // exp는 초 단위이므로 밀리초로 변환
+
     // 리프레쉬 토큰 해싱 후 저장
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken });
+    await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken, refreshTokenExpiresAt: expiresAt });
 
     return { accessToken, refreshToken };
   }
