@@ -1,8 +1,6 @@
 services:
   api_db:
-    build:
-      context: ./docker/db
-      dockerfile: Dockerfile
+    image: mariadb:10.6
     environment:
       MARIADB_ROOT_PASSWORD: ${API_DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${API_DB_NAME}
@@ -12,12 +10,11 @@ services:
       - '${API_DB_PORT}:3306'
     volumes:
       - api_db_data:/var/lib/mysql
-      - ./docker/db/api-init.sh:/docker-entrypoint-initdb.d/init.sh
+      - ./db-init/api-init.sh:/docker-entrypoint-initdb.d/init.sh
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   auth_db:
-    build:
-      context: ./docker/db
-      dockerfile: Dockerfile
+    image: mariadb:10.6
     environment:
       MARIADB_ROOT_PASSWORD: ${AUTH_DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${AUTH_DB_NAME}
@@ -27,7 +24,8 @@ services:
       - '${AUTH_DB_PORT}:3306'
     volumes:
       - auth_db_data:/var/lib/mysql
-      - ./docker/db/auth-init.sh:/docker-entrypoint-initdb.d/init.sh
+      - ./db-init/auth-init.sh:/docker-entrypoint-initdb.d/init.sh
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
 volumes:
   api_db_data:
