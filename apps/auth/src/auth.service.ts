@@ -1,13 +1,13 @@
 import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 
+import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
-import { LoginDto } from './dto/login.dto';
 
 const SALT_ROUNDS = 10;
 @Injectable()
@@ -52,12 +52,12 @@ export class AuthService {
 
     const user = await this.userRepository.findOneBy({ username });
     if (!user) {
-      throw new UnauthorizedException('계정명을 다시 확인하세요.');
+      throw new UnauthorizedException('계정명 또는 비밀번호가 잘못되었습니다.');
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
-      throw new UnauthorizedException('비밀번호가 일치하지 않습니다.');
+      throw new UnauthorizedException('계정명 또는 비밀번호가 잘못되었습니다.');
     }
 
     // 액세스 토큰과 리프레쉬 토큰 생성
