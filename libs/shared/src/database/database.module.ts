@@ -19,7 +19,8 @@ export class SharedDatabaseModule {
               password: configService.get(`${dbType}_DB_PASSWORD`),
               database: configService.get(`${dbType}_DB_NAME`),
               autoLoadEntities: true,
-              synchronize: configService.get('NODE_ENV') !== 'production',
+              synchronize: false,
+              logging: true,
             };
           },
           inject: [ConfigService],

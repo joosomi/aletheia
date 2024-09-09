@@ -1,9 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AuthModule } from './auth.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { GlobalExceptionFilter } from '@app/shared/filters/global-exception.filter';
 
