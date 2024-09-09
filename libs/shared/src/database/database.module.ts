@@ -11,6 +11,8 @@ export class SharedDatabaseModule {
         TypeOrmModule.forRootAsync({
           imports: [ConfigModule],
           useFactory: (configService: ConfigService) => {
+            const isDevelopment = configService.get<string>('NODE_ENV') === 'development';
+
             return {
               type: 'mariadb',
               host: configService.get(`${dbType}_DB_HOST`, 'localhost'),
@@ -19,8 +21,8 @@ export class SharedDatabaseModule {
               password: configService.get(`${dbType}_DB_PASSWORD`),
               database: configService.get(`${dbType}_DB_NAME`),
               autoLoadEntities: true,
-              synchronize: false,
-              logging: true,
+              synchronize: isDevelopment, // 개발 환경에서만 true
+              logging: isDevelopment, // 개발 환경에서만 로깅
             };
           },
           inject: [ConfigService],
