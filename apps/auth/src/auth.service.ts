@@ -133,4 +133,12 @@ export class AuthService {
 
     return { accessToken };
   }
+
+  /**
+   * 로그아웃
+   * @param userId
+   */
+  async logout(userId: string): Promise<void> {
+    await this.userRepository.update(userId, { refreshToken: null });
+  }
 }

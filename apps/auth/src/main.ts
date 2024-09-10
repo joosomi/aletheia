@@ -34,6 +34,17 @@ const bootstrap = async (): Promise<void> => {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
+        name: 'access_token',
+        description: 'Enter your access token',
+        in: 'header',
+      },
+      'access_token',
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
         name: 'Authorization',
         description: 'Enter your refresh token',
         in: 'header',

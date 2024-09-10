@@ -1,9 +1,10 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards, Request } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 @ApiTags('auth')
@@ -67,8 +68,41 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: '리프레시 토큰이 유효하지 않거나 만료됨' })
   @ApiBearerAuth('refresh_token')
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Refresh token',
+    required: true,
+    schema: {
+      type: 'string',
+      example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    },
+  })
   async refresh(@Request() req): Promise<{ accessToken: string }> {
     const { userId } = req.user;
     return this.authService.refresh(userId); // userId는 JwtRefreshGuard에서 추출됨
+  }
+
+  /**
+   * 로그아웃
+   * @param req
+   */
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '로그아웃' })
+  @ApiResponse({ status: 204, description: '로그아웃 성공' })
+  @ApiResponse({ status: 401, description: '토큰이 유효하지 않거나 만료됨' })
+  @ApiBearerAuth('access_token')
+  @ApiHeader({
+    name: 'Authorization',
+    description: 'Access token',
+    required: true,
+    schema: {
+      type: 'string',
+      example: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    },
+  })
+  async logout(@Request() req): Promise<void> {
+    await this.authService.logout(req.user.id);
   }
 }
