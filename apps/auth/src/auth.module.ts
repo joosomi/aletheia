@@ -3,6 +3,7 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AuthGrpcController } from './auth-grpc.controller';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
@@ -32,7 +33,7 @@ import { LoggerModule } from '@app/shared/logger/logger.module';
       }),
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthGrpcController],
   providers: [AuthService, JwtRefreshGuard, JwtRefreshTokenStrategy, JwtAuthGuard, JwtAuthStrategy],
 })
 export class AuthModule {}

@@ -1,6 +1,9 @@
+import { join } from 'path';
+
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -10,6 +13,17 @@ import { GlobalExceptionFilter } from '@app/shared/filters/global-exception.filt
 
 const bootstrap = async (): Promise<void> => {
   const app = await NestFactory.create(AuthModule);
+  const configService = app.get(ConfigService);
+
+  // gRPC 마이크로서비스 설정
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: 'auth',
+      protoPath: join(__dirname, 'proto/auth.proto'),
+      url: `localhost:${configService.get('AUTH_GRPC_PORT', 50051)}`,
+    },
+  });
 
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
@@ -56,9 +70,9 @@ const bootstrap = async (): Promise<void> => {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document); // 'api-docs' 경로로 접근
 
-  const configService = app.get(ConfigService);
   const port = configService.get<number>('AUTH_PORT') || 8888; // 기본값 8888 설정
 
+  await app.startAllMicroservices();
   await app.listen(port);
 };
 
