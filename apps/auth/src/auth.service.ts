@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { User } from './entities/user.entity';
+import { JwtPayload } from './strategies/jwt.types';
 
 const SALT_ROUNDS = 10;
 @Injectable()
@@ -61,7 +62,12 @@ export class AuthService {
     }
 
     // 액세스 토큰과 리프레쉬 토큰 생성
-    const payload = { username: user.username, sub: user.id, role: user.role };
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
@@ -77,5 +83,54 @@ export class AuthService {
     await this.userRepository.update(user.id, { refreshToken: hashedRefreshToken, refreshTokenExpiresAt: expiresAt });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * 리프레쉬 토큰 유효성 검사
+   * @param userId
+   * @param refreshToken
+   * @returns
+   */
+  async validateRefreshToken(userId: string, refreshToken: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'refreshToken', 'refreshTokenExpiresAt'],
+    });
+
+    if (!user?.refreshToken || !user.refreshTokenExpiresAt) {
+      return false;
+    }
+
+    // 리프레시 토큰 만료 시간 확인
+    if (user.refreshTokenExpiresAt < new Date()) {
+      return false;
+    }
+
+    // 저장된 리프레시 토큰과 비교
+    const isTokenValid = await bcrypt.compare(refreshToken, user.refreshToken);
+    return isTokenValid;
+  }
+
+  /**
+   * 새로운 액세스 토큰 발급
+   * @param userId
+   * @returns accessToken
+   */
+  async refresh(userId: string): Promise<{ accessToken: string }> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (!user || !user.refreshToken) {
+      throw new UnauthorizedException('유효하지 않은 리프레시 토큰입니다.');
+    }
+
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      role: user.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload); // 새로운 액세스 토큰 발급
+
+    return { accessToken };
   }
 }

@@ -29,6 +29,17 @@ const bootstrap = async (): Promise<void> => {
     .setTitle('인증 서버 API 명세서') // 자원 서버 관련 제목
     .setDescription('Aletheia 인증 서버의 API 명세서 입니다.')
     .addTag('auth', '인증 관련 API')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Authorization',
+        description: 'Enter your refresh token',
+        in: 'header',
+      },
+      'refresh_token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './entities/user.entity';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { JwtRefreshTokenStrategy } from './strategies/jwt-refresh.strategy';
 
 import { SharedDatabaseModule } from '@app/shared';
 import { LoggerModule } from '@app/shared/logger/logger.module';
@@ -29,6 +31,6 @@ import { LoggerModule } from '@app/shared/logger/logger.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtRefreshGuard, JwtRefreshTokenStrategy],
 })
 export class AuthModule {}
