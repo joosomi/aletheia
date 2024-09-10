@@ -18,6 +18,9 @@ export class User extends BaseEntity {
   @Column({ length: 255, nullable: true })
   refreshToken: string;
 
+  @Column({ type: 'timestamp', nullable: true })
+  refreshTokenExpiresAt: Date;
+
   @Column({
     type: 'enum',
     enum: UserRole,
