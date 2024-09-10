@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ApiController } from './api.controller';
-import { ApiService } from './api.service';
 import { Invoice } from './entities/invoice.entity';
 import { Product } from './entities/product.entity';
+import { OrderController } from './order.controller';
+import { OrderService } from './order.service';
 
 import { SharedDatabaseModule } from '@app/shared';
 import { LoggerModule } from '@app/shared/logger/logger.module';
@@ -19,7 +19,7 @@ import { LoggerModule } from '@app/shared/logger/logger.module';
     LoggerModule,
     TypeOrmModule.forFeature([Invoice, Product]),
   ],
-  controllers: [ApiController],
-  providers: [ApiService],
+  controllers: [OrderController],
+  providers: [OrderService],
 })
-export class ApiModule {}
+export class OrderModule {}

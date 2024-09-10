@@ -3,12 +3,12 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ApiModule } from './api.module';
+import { OrderModule } from './order.module';
 
 import { GlobalExceptionFilter } from '@app/shared/filters/global-exception.filter';
 
 const bootstrap = async (): Promise<void> => {
-  const app = await NestFactory.create(ApiModule);
+  const app = await NestFactory.create(OrderModule);
 
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
