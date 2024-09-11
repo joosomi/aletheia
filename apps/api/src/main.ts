@@ -10,7 +10,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { OrderModule } from './order.module';
 
 import { GlobalExceptionFilter } from '@app/shared/filters/global-exception.filter';
-import { ValidationPipe } from '@nestjs/common';
 
 const bootstrap = async (): Promise<void> => {
   const app = await NestFactory.create(OrderModule);
