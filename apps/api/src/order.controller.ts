@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Request } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
 import { PaginatedResponse } from './common/pagination-response.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GetOrdersDto } from './dto/get-orders.dto';
+import { UpdateOrderStatusDto } from './dto/update-status.dto';
 import { Invoice, OrderType } from './entities/invoice.entity';
 import { OrderService } from './order.service';
 @ApiTags('order')
@@ -101,5 +102,26 @@ export class OrderController {
     @Request() req,
   ): Promise<{ success: boolean; message: string }> {
     return this.orderService.createOrder(createOrderDto, req.user, OrderType.SALE);
+  }
+
+  @Patch(':orderId/status')
+  @ApiOperation({
+    summary: '주문 상태 변경',
+    description:
+      '주문의 상태를 변경합니다. 관리자는 모든 상태로 변경 가능하며, 일반 사용자는 ORDER_COMPLETED 상태로만 변경 가능합니다.구매 주문에서는 ORDER_COMPLETED에서 PAYMENT_RECEIVED로, PAYMENT_RECEIVED에서 SHIPPED로 전환할 수 있습니다. 판매 주문에서는 ORDER_COMPLETED에서 PAYMENT_SENT, PAYMENT_SENT에서 ITEM_RECEIVED로 전환할 수 있습니다.',
+  })
+  @ApiBearerAuth('access_token')
+  @ApiResponse({ status: 200, description: '주문 상태 변경 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 입력 정보 또는 유효하지 않은 상태 변경' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 403, description: '주문 상태를 변경할 권한이 없습니다.' })
+  @ApiResponse({ status: 404, description: '해당 주문을 찾을 수 없습니다.' })
+  async updateOrderStatus(
+    @Param('orderId') orderId: string,
+    @Body() updateOrderStatusDto: UpdateOrderStatusDto,
+    @Request() req,
+  ): Promise<{ success: boolean; message: string }> {
+    const user = req.user;
+    return this.orderService.updateOrderStatus(orderId, updateOrderStatusDto.status, user);
   }
 }

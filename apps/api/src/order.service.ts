@@ -164,4 +164,82 @@ export class OrderService {
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}${month}${day}`;
   }
+
+  /**
+   * 주문 status 변경
+   * @param orderId
+   * @param newStatus
+   * @param user
+   * @returns
+   */
+  async updateOrderStatus(
+    orderId: string,
+    newStatus: Status,
+    user: { userId: string; role: string },
+  ): Promise<{ success: boolean; message: string }> {
+    const order = await this.invoiceRepository.findOne({ where: { id: orderId } });
+
+    if (!order) {
+      throw new NotFoundException('해당 주문을 찾을 수 없습니다.');
+    }
+
+    // 현재 상태와 새로운 상태가 같은 경우 처리
+    if (order.status === newStatus) {
+      return {
+        success: false,
+        message: '주문이 이미 해당 상태입니다.',
+      };
+    }
+
+    //권한 확인
+    if (!this.canChangeStatus(user, order, newStatus)) {
+      throw new ForbiddenException('주문 상태를 변경할 권한이 없습니다.');
+    }
+
+    //변경 가능한 상태인지 확인
+    if (!this.isValidStatusTransition(order.status, newStatus, order.orderType)) {
+      throw new BadRequestException('유효하지 않은 상태 변경입니다.');
+    }
+
+    order.status = newStatus;
+    await this.invoiceRepository.save(order);
+
+    return {
+      success: true,
+      message: '주문 상태가 성공적으로 업데이트되었습니다.',
+    };
+  }
+
+  private canChangeStatus(user: { userId: string; role: string }, order: Invoice, newStatus: Status): boolean {
+    if (user.role === 'ADMIN') {
+      return true; // 관리자는 모든 주문의 모든 상태 변경 가능
+    }
+
+    // 일반 사용자는 자신의 주문만 ORDER_COMPLETED 상태로 변경 가능
+    return user.userId === order.userId && newStatus === Status.ORDER_COMPLETED;
+  }
+
+  private isValidStatusTransition(currentStatus: Status, newStatus: Status, orderType: OrderType): boolean {
+    // 구매 주문인 경우
+    if (orderType === OrderType.PURCHASE) {
+      if (currentStatus === Status.ORDER_COMPLETED && newStatus === Status.PAYMENT_RECEIVED) {
+        return true;
+      }
+      if (currentStatus === Status.PAYMENT_RECEIVED && newStatus === Status.SHIPPED) {
+        return true;
+      }
+    }
+
+    // 판매 주문인 경우
+    if (orderType === OrderType.SALE) {
+      if (currentStatus === Status.ORDER_COMPLETED && newStatus === Status.PAYMENT_SENT) {
+        return true;
+      }
+      if (currentStatus === Status.PAYMENT_SENT && newStatus === Status.ITEM_RECEIVED) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 }

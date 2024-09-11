@@ -7,7 +7,7 @@ import { OrderType } from '../entities/invoice.entity';
 export class GetOrdersDto {
   @ApiProperty({
     description: '조회할 날짜 (YYYY-MM-DD 형식)',
-    example: '2023-09-11',
+    example: '2024-09-11',
     required: false,
   })
   @IsOptional()
