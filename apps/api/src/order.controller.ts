@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Request } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
+import { PaginatedResponse } from './common/pagination-response.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GetOrdersDto } from './dto/get-orders.dto';
-import { PaginatedResponse } from './dto/pagination-response.dto';
 import { Invoice, OrderType } from './entities/invoice.entity';
 import { OrderService } from './order.service';
 @ApiTags('order')
@@ -19,9 +19,9 @@ export class OrderController {
    */
   @Get()
   @ApiOperation({
-    summary: '주문 목록 조회',
+    summary: '주문 목록 조회 및 페이지네이션',
     description:
-      '페이지네이션이 적용된 주문 목록을 조회합니다. 사용자는 본인의 주문만 조회할 수 있습니다. 관리자는 모든 주문 조회가 가능합니다.',
+      '페이지네이션이 적용된 주문 목록 조회가 가능합니다. 사용자는 본인의 주문만 조회할 수 있습니다. 관리자는 모든 주문 조회가 가능합니다.',
   })
   @ApiQuery({ name: 'date', required: false, type: String, description: '날짜별 필터링 (YYYY-MM-DD 형식)' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: '한 페이지당 항목 수' })
@@ -39,6 +39,30 @@ export class OrderController {
   async getOrders(@Query() getOrdersDto: GetOrdersDto, @Request() req): Promise<PaginatedResponse<Invoice>> {
     const user = req.user;
     return this.orderService.getOrders(getOrdersDto, user);
+  }
+
+  /**
+   * 금 주문 상세 조회
+   * @param orderId
+   * @param req
+   * @returns
+   */
+  @Get(':orderId')
+  @ApiOperation({
+    summary: '금 주문 상세 조회',
+    description: '주문 ID로 금 주문의 상세 정보를 조회합니다. 사용자는 본인의 주문만 조회할 수 있습니다. ',
+  })
+  @ApiBearerAuth('access_token')
+  @ApiResponse({ status: 200, description: '주문 상세 조회 성공' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiResponse({ status: 403, description: '해당 주문에 접근할 권한이 없습니다.' })
+  @ApiResponse({ status: 404, description: '해당 주문을 찾을 수 없습니다.' })
+  async getOrderById(
+    @Param('orderId') orderId: string,
+    @Request() req,
+  ): Promise<{ success: boolean; message: string; data: Invoice }> {
+    const user = req.user;
+    return this.orderService.getOrderById(orderId, user);
   }
 
   /**

@@ -1,10 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { PaginatedResponse } from './common/pagination-response.interface';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GetOrdersDto } from './dto/get-orders.dto';
-import { PaginatedResponse } from './dto/pagination-response.dto';
 import { Invoice, OrderType, Status } from './entities/invoice.entity';
 import { Product } from './entities/product.entity';
 
@@ -61,6 +61,37 @@ export class OrderService {
         next: hasNextPage ? `/api/orders?limit=${limit}&offset=${offset + limit}` : null,
         previous: hasPreviousPage ? `/api/orders?limit=${limit}&offset=${Math.max(0, offset - limit)}` : null,
       },
+    };
+  }
+
+  /**
+   * 금 주문 상세 조회
+   * @param orderId
+   * @param user
+   * @returns
+   */
+  async getOrderById(
+    orderId: string,
+    user: { userId: string; role: string },
+  ): Promise<{ success: boolean; message: string; data: Invoice }> {
+    const query = this.invoiceRepository.createQueryBuilder('invoice').where('invoice.id = :orderId', { orderId });
+
+    const order = await query.getOne();
+
+    // 주문이 존재하지 않는 경우
+    if (!order) {
+      throw new NotFoundException('해당 주문을 찾을 수 없습니다.');
+    }
+
+    // 관리자가 아닌 경우, 자신의 주문만 조회가 가능함.
+    if (user.role !== 'ADMIN' && order.userId !== user.userId) {
+      throw new ForbiddenException('해당 주문에 접근할 권한이 없습니다.');
+    }
+
+    return {
+      success: true,
+      message: '주문 조회에 성공했습니다.',
+      data: order,
     };
   }
 
