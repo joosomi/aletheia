@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 
 import { GrpcAuthGuard } from './guards/grpc-auth.guard';
 import { OrderService } from './order.service';
@@ -9,7 +9,8 @@ export class OrderController {
 
   @Get('test-auth')
   @UseGuards(GrpcAuthGuard)
-  async testAuth() {
+  async testAuth(@Request() req) {
+    // const user = req.user;
     return { message: 'Authenticated successfully via gRPC' };
   }
 }
