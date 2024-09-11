@@ -4,13 +4,14 @@ import { Product } from './product.entity';
 
 import { BaseEntity } from '@app/shared/database/base.entity';
 
-enum OrderType {
+export enum OrderType {
   PURCHASE = 'PURCHASE',
   SALE = 'SALE',
 }
 
 //주문 상태
-enum Status {
+export enum Status {
+  PENDING = 'PENDING', // 주문 대기
   ORDER_COMPLETED = 'ORDER_COMPLETED', //주문 완료
   PAYMENT_RECEIVED = 'PAYMENT_RECEIVED', //입금 완료
   SHIPPED = 'SHIPPED', //발송 완료
@@ -36,6 +37,7 @@ export class Invoice extends BaseEntity {
   @Column({
     type: 'enum',
     enum: Status,
+    default: Status.PENDING, // 기본값을 PENDING으로 설정
   })
   status: Status;
 
@@ -66,7 +68,25 @@ export class Invoice extends BaseEntity {
   })
   deliveryAddress: string; //배송 주소
 
-  @ManyToOne(() => Product, (product) => product.invoices)
+  @Column({
+    type: 'varchar',
+    length: 20,
+  })
+  recipientName: string; //수령인
+
+  @Column({
+    type: 'varchar',
+    length: 20,
+  })
+  contactNumber: string; //연락처
+
+  @Column({
+    type: 'varchar',
+    length: 10,
+  })
+  postalCode: string; //우편번호
+
+  @ManyToOne(() => Product, (product) => product.invoices, { nullable: false })
   product: Product; // Product와의 관계 설정
 
   @Column({

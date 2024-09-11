@@ -141,4 +141,29 @@ export class AuthService {
   async logout(userId: string): Promise<void> {
     await this.userRepository.update(userId, { refreshToken: null });
   }
+
+  /**
+   * gRPC 액세스 토큰 유효성 검사
+   * 유효하면 payload return
+   * @param token
+   * @returns
+   */
+  async validateTokenGrpc(
+    token: string,
+  ): Promise<{ isValid: boolean; userId?: string; username?: string; role?: string }> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('JWT_SECRET'),
+      });
+      return {
+        isValid: true,
+        userId: payload.sub,
+        username: payload.username,
+        role: payload.role,
+      };
+    } catch (error) {
+      console.error('Token verification failed:', error); // 에러 로그
+      return { isValid: false };
+    }
+  }
 }
