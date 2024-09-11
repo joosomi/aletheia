@@ -120,7 +120,7 @@ export class OrderService {
     const newOrder = this.invoiceRepository.create({
       orderNumber,
       orderType,
-      status: Status.ORDER_COMPLETED, //주문 완료
+      status: Status.ORDER_COMPLETED, //주문 완료 상태로 변경
       quantity: createOrderDto.quantity,
       price,
       totalPrice,
@@ -210,16 +210,39 @@ export class OrderService {
     };
   }
 
+  /**
+   * 주문 상태를 바꿀 수 있는지 권한 확인
+   * 일반 사용자는 자신의 주문 상태만 바꿀 수 있으며 ORDER_COMPLETED 상태로만 변경이 가능함.
+   * @param user
+   * @param order
+   * @param newStatus
+   * @returns boolean
+   */
   private canChangeStatus(user: { userId: string; role: string }, order: Invoice, newStatus: Status): boolean {
     if (user.role === 'ADMIN') {
       return true; // 관리자는 모든 주문의 모든 상태 변경 가능
     }
 
-    // 일반 사용자는 자신의 주문만 ORDER_COMPLETED 상태로 변경 가능
-    return user.userId === order.userId && newStatus === Status.ORDER_COMPLETED;
+    // 일반 사용자는 자신의 주문만 변경 가능
+    if (user.userId !== order.userId) {
+      return false;
+    }
+    const allowedStatusChanges = [Status.ORDER_COMPLETED]; //ORDER_COMPLETED 상태로만 변경 가능
+    return allowedStatusChanges.includes(newStatus);
   }
 
+  /**
+   *
+   * @param currentStatus
+   * @param newStatus
+   * @param orderType
+   * @returns
+   */
   private isValidStatusTransition(currentStatus: Status, newStatus: Status, orderType: OrderType): boolean {
+    if (currentStatus === Status.PENDING && newStatus === Status.ORDER_COMPLETED) {
+      return true;
+    }
+
     // 구매 주문인 경우
     if (orderType === OrderType.PURCHASE) {
       if (currentStatus === Status.ORDER_COMPLETED && newStatus === Status.PAYMENT_RECEIVED) {
@@ -241,5 +264,40 @@ export class OrderService {
     }
 
     return false;
+  }
+
+  /**
+   * 주문 취소
+   * @param orderId
+   * @param user
+   * @returns
+   */
+  async cancelOrder(
+    orderId: string,
+    user: { userId: string; role: string },
+  ): Promise<{ success: boolean; message: string }> {
+    const order = await this.invoiceRepository.findOne({ where: { id: orderId } });
+
+    if (!order) {
+      throw new NotFoundException('해당 주문을 찾을 수 없습니다.');
+    }
+
+    if (user.role !== 'ADMIN' && user.userId !== order.userId) {
+      throw new ForbiddenException('해당 주문을 취소할 권한이 없습니다.');
+    }
+
+    // 주문 상태에 따른 취소 가능 여부 확인
+    // ORDER_COMPLETED, PAYMENT_RECEIVED, PAYMENT_SENT 중 하나일 때만 취소를 허용
+    if (![Status.ORDER_COMPLETED, Status.PAYMENT_RECEIVED, Status.PAYMENT_SENT].includes(order.status)) {
+      throw new BadRequestException('현재 주문 상태에서는 취소가 불가능합니다.');
+    }
+
+    // Soft delete 수행
+    await this.invoiceRepository.softDelete(orderId);
+
+    return {
+      success: true,
+      message: '주문이 성공적으로 취소되었습니다.',
+    };
   }
 }

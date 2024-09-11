@@ -31,7 +31,6 @@ export class GetOrdersDto {
     description: '건너뛸 주문 수 (페이지네이션에 사용)',
     minimum: 0,
     default: 0,
-    example: 10,
     required: false,
   })
   @IsOptional()
@@ -43,7 +42,7 @@ export class GetOrdersDto {
   @ApiProperty({
     description: '주문 유형',
     enum: OrderType,
-    example: OrderType.PURCHASE,
+
     required: false,
   })
   @IsOptional()

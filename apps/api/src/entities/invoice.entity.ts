@@ -11,6 +11,7 @@ export enum OrderType {
 
 //주문 상태
 export enum Status {
+  PENDING = 'PENDING', // 주문 대기
   ORDER_COMPLETED = 'ORDER_COMPLETED', //주문 완료
   PAYMENT_RECEIVED = 'PAYMENT_RECEIVED', //입금 완료
   SHIPPED = 'SHIPPED', //발송 완료
@@ -36,6 +37,7 @@ export class Invoice extends BaseEntity {
   @Column({
     type: 'enum',
     enum: Status,
+    default: Status.PENDING, // 기본값을 PENDING으로 설정
   })
   status: Status;
 
