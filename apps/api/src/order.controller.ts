@@ -1,15 +1,22 @@
-import { Controller, Get, Query, Request } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
 
-import { PaginatedResponse } from './common/pagination-response.dto';
+import { CreateOrderDto } from './dto/create-order.dto';
 import { GetOrdersDto } from './dto/get-orders.dto';
-import { Invoice } from './entities/invoice.entity';
+import { PaginatedResponse } from './dto/pagination-response.dto';
+import { Invoice, OrderType } from './entities/invoice.entity';
 import { OrderService } from './order.service';
 @ApiTags('order')
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  /**
+   * 주문 목록 조회
+   * @param getOrdersDto
+   * @param req
+   * @returns
+   */
   @Get()
   @ApiOperation({
     summary: '주문 목록 조회',
@@ -20,16 +27,55 @@ export class OrderController {
   @ApiQuery({ name: 'limit', required: false, type: Number, description: '한 페이지당 항목 수' })
   @ApiQuery({ name: 'offset', required: false, type: Number, description: '건너뛸 항목 수' })
   @ApiQuery({
-    name: 'invoiceType',
+    name: 'orderType',
     required: false,
     enum: ['PURCHASE', 'SALE'],
     description: '주문 유형별 필터링 (PURCHASE: 구매, SALE: 판매)',
   })
   @ApiBearerAuth('access_token')
   @ApiResponse({ status: 200, description: '주문 목록 조회 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 입력 정보' })
   @ApiResponse({ status: 401, description: '인증 실패' })
   async getOrders(@Query() getOrdersDto: GetOrdersDto, @Request() req): Promise<PaginatedResponse<Invoice>> {
     const user = req.user;
     return this.orderService.getOrders(getOrdersDto, user);
+  }
+
+  /**
+   * 금 구매 주문 생성
+   * @param createOrderDto
+   * @param req
+   * @returns
+   */
+  @Post('purchase')
+  @ApiOperation({ summary: '금 구매 주문 생성', description: '새로운 금 구매 주문을 생성합니다.' })
+  @ApiResponse({ status: 201, description: '주문 생성 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 입력 정보' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiBearerAuth('access_token')
+  async createPurchaseOrder(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() req,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.orderService.createOrder(createOrderDto, req.user, OrderType.PURCHASE);
+  }
+
+  /**
+   * 금 판매 주문 생성
+   * @param createOrderDto
+   * @param req
+   * @returns
+   */
+  @Post('sale')
+  @ApiOperation({ summary: '금 판매 주문 생성', description: '새로운 금 판매 주문을 생성합니다.' })
+  @ApiResponse({ status: 201, description: '주문 생성 성공' })
+  @ApiResponse({ status: 400, description: '잘못된 입력 정보' })
+  @ApiResponse({ status: 401, description: '인증 실패' })
+  @ApiBearerAuth('access_token')
+  async createSaleOrder(
+    @Body() createOrderDto: CreateOrderDto,
+    @Request() req,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.orderService.createOrder(createOrderDto, req.user, OrderType.SALE);
   }
 }

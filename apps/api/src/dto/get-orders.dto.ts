@@ -2,10 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDateString, IsEnum, IsInt, IsOptional, Min } from 'class-validator';
 
-enum InvoiceType {
-  PURCHASE = 'PURCHASE',
-  SALE = 'SALE',
-}
+import { OrderType } from '../entities/invoice.entity';
 
 export class GetOrdersDto {
   @ApiProperty({
@@ -45,11 +42,11 @@ export class GetOrdersDto {
 
   @ApiProperty({
     description: '주문 유형',
-    enum: InvoiceType,
-    example: InvoiceType.PURCHASE,
+    enum: OrderType,
+    example: OrderType.PURCHASE,
     required: false,
   })
   @IsOptional()
-  @IsEnum(InvoiceType)
-  invoiceType?: InvoiceType;
+  @IsEnum(OrderType)
+  orderType?: OrderType;
 }

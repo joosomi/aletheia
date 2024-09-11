@@ -4,7 +4,7 @@ import { Invoice } from './invoice.entity';
 
 import { BaseEntity } from '@app/shared/database/base.entity';
 
-enum ProductType {
+export enum ProductType {
   GOLD_999 = 'GOLD_999', // 99.9% 금
   GOLD_9999 = 'GOLD_9999', //99.99% 금
 }
