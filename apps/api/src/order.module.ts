@@ -2,6 +2,7 @@ import { join } from 'path';
 
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -39,6 +40,13 @@ import { LoggerModule } from '@app/shared/logger/logger.module';
     ]),
   ],
   controllers: [OrderController],
-  providers: [OrderService, GrpcAuthGuard],
+  providers: [
+    OrderService,
+    GrpcAuthGuard,
+    {
+      provide: APP_GUARD,
+      useClass: GrpcAuthGuard,
+    },
+  ],
 })
 export class OrderModule {}

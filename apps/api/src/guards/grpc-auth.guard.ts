@@ -47,6 +47,7 @@ export class GrpcAuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    console.log(token);
     return type === 'Bearer' ? token : undefined;
   }
 }
