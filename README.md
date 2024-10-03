@@ -1,4 +1,40 @@
-# Aletheia 금 거래 및 판매 서비스
+## 📑 **목차**
+
+1. [Quick Start - 서버 구동 가이드](#quick-start---서버-구동-가이드)
+   - [환경 변수 설정 (.env 파일)](#환경-변수-설정-env-파일)
+   - [Docker 실행 가이드](#docker-실행-가이드)
+2. [서버 구동 가이드](#서버-구동-가이드)
+3. [ERD 다이어그램](#erd-다이어그램)
+4. [API Swagger 문서화](#api-swagger-문서화)
+5. [디렉토리 구조](#디렉토리-구조)
+6. [Git Issue를 활용한 Task 관리](#git-issue를-활용한-task-관리)
+
+<br>
+
+# 👑 Aletheia API
+
+금 거래 및 판매를 위한 주문 관리 서비스입니다.
+
+#### 프로젝트 구조
+
+1. **자원 서버(api)** - 구매, 판매 주문 관리 (주문 CRUD를 위한 RESTful API)
+
+   - 구매 및 판매 주문 생성, 조회, 수정, 삭제 기능을 담당합니다.
+   - JWT 인증을 사용하여 로그인된 사용자만 주문 기능을 이용할 수 있도록 설정되었습니다.
+
+2. **인증 서버(auth)** - 인증 서비스 (gRPC를 통한 인증 처리)
+   - gRPC를 통해 자원 서버와 통신하며, JWT 액세스 토큰을 검증하고 인증된 사용자라면 사용자 정보를 반환합니다.
+   - 회원가입, 로그인, Access Token과 Refresh Token 발급, 로그아웃 기능을 구현하였습니다.
+
+#### 📅 개발 기간
+
+24.09.04 ~ 24.09.11
+
+#### 🛠️ 개발 환경
+
+![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white) ![gRPC](https://img.shields.io/badge/gRPC-009688?style=for-the-badge&logo=grpc&logoColor=white) ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white) ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white) ![Swagger](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=white) ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON%20web%20tokens&logoColor=white)
+
+---
 
 ## Quick Start - 서버 구동 가이드
 
@@ -98,6 +134,29 @@ npm run start:dev:all
 
 ![ERD 다이어그램](/docs/erd.png)
 
+#### **BaseEntity**
+
+Libs에 정의하여, 공통적으로 사용되는 필드 (id, createdAt, updatedAt, deletedAt)를 포함하는 엔티티입니다. 각 테이블에서 이를 상속받아 중복을 줄이고 관리의 편의성을 높였습니다.
+
+#### **인증 서버 (Auth)**:
+
+    •  users 테이블은 사용자 정보를 관리하며, username, password, hashed refreshToken, role 필드를 포함합니다.
+    •  회원 가입을 하면 기본적으로 ‘USER` 역할이 부여됩니다.
+
+    USER (기본 역할):
+    •  회원 가입 시 자동으로 부여됩니다.
+    •  본인의 주문 생성, 조회, 수정, 취소가 가능합니다.
+    •  주문 상태 변경은 제한적으로 가능합니다 (예: 주문 완료 상태로만 변경).
+    ADMIN (관리자 역할):
+    •  모든 사용자의 주문을 조회하고 관리할 수 있습니다.
+    •  주문의 상태를 모든 단계로 변경할 수 있는 권한이 있습니다.
+
+#### **자원 서버 (API)**:
+
+    •  products 테이블은 금의 종류(GOLD_999, GOLD_9999) 및 구매/판매 가격을 관리합니다.
+    •  invoices 테이블은 각 주문 정보를 저장하며, 주문 유형(PURCHASE, SALE) 및 상태(ORDER_COMPLETED, PAYMENT_RECEIVED 등)를 기록합니다.
+    •  invoices는 products와 관계를 맺고 있으며, 사용자의 ID는 JWT 토큰을 통해 전달되어 각 주문에 연결됩니다.
+
 ---
 
 ## API Swagger 문서화
@@ -107,10 +166,12 @@ npm run start:dev:all
 - [인증 서버 Swagger 문서](http://localhost:8888/api-docs) (http://localhost:8888/api-docs)
 - [API 서버 Swagger 문서](http://localhost:9999/api-docs) (http://localhost:9999/api-docs)
 
-Swagger UI를 통해 API 요청을 테스트하고, 각 엔드포인트의 상세 정보를 확인할 수 있습니다.
+Swagger UI를 통해 API 요청을 테스트하고, 각 엔드포인트의 상세 정보를 확인할 수 있습니다. <br>
+![swagger](/docs/authswagger.png)
+![swagger](/docs/apiswagger.png)
 
 <details>
-  <summary>API 명세서</summary>
+  <summary>🔍 API 명세서</summary>
   
 ## 1. 인증 API
 
@@ -365,3 +426,98 @@ Authorization: Bearer {access_token}
 - `403 Forbidden`: 주문 상태를 변경할 권한이 없음
 - `404 Not Found`: 해당 주문을 찾을 수 없음
 </details>
+
+---
+
+#### 디렉토리 구조
+
+<details>
+  <summary>🔍 디렉토리 구조</summary>
+
+```
+├── apps
+│   ├── api
+│   │   ├── src
+│   │   │   ├── common
+│   │   │   │   └── pagination-response.interface.ts
+│   │   │   ├── dto
+│   │   │   │   ├── create-order.dto.ts
+│   │   │   │   ├── get-orders.dto.ts
+│   │   │   │   └── update-status.dto.ts
+│   │   │   ├── entities
+│   │   │   │   ├── invoice.entity.ts
+│   │   │   │   └── product.entity.ts
+│   │   │   ├── guards
+│   │   │   │   └── grpc-auth.guard.ts
+│   │   │   ├── main.ts
+│   │   │   ├── order.controller.spec.ts
+│   │   │   ├── order.controller.ts
+│   │   │   ├── order.module.ts
+│   │   │   ├── order.service.ts
+│   │   │   └── proto
+│   │   │       └── auth.proto
+│   │   ├── test
+│   │   │   ├── app.e2e-spec.ts
+│   │   │   └── jest-e2e.json
+│   │   └── tsconfig.app.json
+│   └── auth
+│       ├── src
+│       │   ├── auth-grpc.controller.ts
+│       │   ├── auth.controller.spec.ts
+│       │   ├── auth.controller.ts
+│       │   ├── auth.module.ts
+│       │   ├── auth.service.ts
+│       │   ├── dto
+│       │   │   ├── login.dto.ts
+│       │   │   └── register.dto.ts
+│       │   ├── entities
+│       │   │   └── user.entity.ts
+│       │   ├── guards
+│       │   │   ├── jwt-auth.guard.ts
+│       │   │   └── jwt-refresh.guard.ts
+│       │   ├── main.ts
+│       │   ├── proto
+│       │   │   └── auth.proto
+│       │   └── strategies
+│       │       ├── jwt-auth.strategy.ts
+│       │       ├── jwt-refresh.strategy.ts
+│       │       └── jwt.types.ts
+│       ├── test
+│       │   ├── app.e2e-spec.ts
+│       │   └── jest-e2e.json
+│       └── tsconfig.app.json
+├── db-init
+│   ├── api-init.sh
+│   └── auth-init.sh
+├── docker-compose.yml
+├── libs
+│   └── shared
+│       ├── src
+│       │   ├── database
+│       │   │   ├── base.entity.ts
+│       │   │   └── database.module.ts
+│       │   ├── filters
+│       │   │   └── global-exception.filter.ts
+│       │   ├── index.ts
+│       │   ├── logger
+│       │   │   └── logger.module.ts
+│       │   ├── shared.module.ts
+│       │   ├── shared.service.spec.ts
+│       │   └── shared.service.ts
+│       └── tsconfig.lib.json
+├── nest-cli.json
+├── package-lock.json
+├── package.json
+└── tsconfig.json
+```
+
+</details>
+
+---
+
+#### Git Issue를 활용한 Task 관리
+
+<details>
+  <summary>🔍 Git Issue 관리</summary>
+
+![Issue](/docs/Issue.png)
