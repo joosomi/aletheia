@@ -166,7 +166,8 @@ Libs에 정의하여, 공통적으로 사용되는 필드 (id, createdAt, update
 - [인증 서버 Swagger 문서](http://localhost:8888/api-docs) (http://localhost:8888/api-docs)
 - [API 서버 Swagger 문서](http://localhost:9999/api-docs) (http://localhost:9999/api-docs)
 
-Swagger UI를 통해 API 요청을 테스트하고, 각 엔드포인트의 상세 정보를 확인할 수 있습니다. <br>
+Swagger UI를 통해 API 요청을 테스트하고, 각 엔드포인트의 상세 정보를 확인할 수 있습니다. 
+<br>
 ![swagger](/docs/authswagger.png)
 ![swagger](/docs/apiswagger.png)
 
@@ -429,7 +430,7 @@ Authorization: Bearer {access_token}
 
 ---
 
-#### 디렉토리 구조
+### 디렉토리 구조
 
 <details>
   <summary>🔍 디렉토리 구조</summary>
@@ -515,9 +516,14 @@ Authorization: Bearer {access_token}
 
 ---
 
-#### Git Issue를 활용한 Task 관리
+### Git Issue를 활용한 Task 관리
 
 <details>
   <summary>🔍 Git Issue 관리</summary>
 
 ![Issue](/docs/Issue.png)
+
+</details>
+
+
+
